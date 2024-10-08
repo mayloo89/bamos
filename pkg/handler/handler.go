@@ -1,14 +1,25 @@
 package handler
 
 import (
+	"fmt"
+	"html/template"
+	"io"
+	"log"
 	"net/http"
+	"strings"
+
+	"github.com/MobilityData/gtfs-realtime-bindings/golang/gtfs"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/mayloo89/bamos/pkg/config"
 	"github.com/mayloo89/bamos/pkg/model"
 	"github.com/mayloo89/bamos/pkg/render"
+	"github.com/mayloo89/bamos/utils"
 )
 
 var Repo *Repository
+var clientID = "c8d4a93a976a477ba07a085281a54cfe"
+var clientSecret = "3e7EB2594E224759901303321FbD1E18"
 
 type (
 	Repository struct {
@@ -36,4 +47,112 @@ func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
 	render.RenderTemplate(w, "home.page.tmpl", &model.TemplateData{
 		StringMap: stringMap,
 	})
+}
+
+func (m *Repository) VehiclePositionsSimple(w http.ResponseWriter, r *http.Request) {
+	stringMap := make(map[string]string)
+	urlBase := "https://apitransporte.buenosaires.gob.ar/colectivos/vehiclePositionsSimple"
+
+	req, err := http.NewRequest("GET", urlBase, nil)
+	if err != nil {
+		stringMap["error"] = err.Error()
+	}
+
+	q := req.URL.Query()
+	q.Add("client_id", clientID)
+	q.Add("client_secret", clientSecret)
+
+	req.URL.RawQuery = q.Encode()
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		stringMap["error"] = err.Error()
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		stringMap["error"] = fmt.Sprintf("Error getting request, response code: %d", resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		stringMap["error"] = err.Error()
+	}
+
+	stringMap["response"] = string(body)
+
+	render.RenderTemplate(w, "positionsimple.page.tmpl", &model.TemplateData{
+		StringMap: stringMap,
+	})
+}
+
+func (m *Repository) SearchLine(w http.ResponseWriter, r *http.Request) {
+	line := r.PathValue("line")
+
+	result := utils.SearchLine(line, m.App.DataCache.Routes)
+	resultString := strings.Replace(fmt.Sprintf("%+v", result), "} {", "} <br> {", -1)
+
+	templateMap := make(map[string]template.HTML)
+	templateMap["result"] = template.HTML(resultString)
+
+	render.RenderTemplate(w, "search.page.tmpl", &model.TemplateData{
+		TemplateMap: templateMap,
+	})
+
+}
+
+// FIXME: this func doesn't work
+func (m *Repository) FeedGtfsFrequency(w http.ResponseWriter, r *http.Request) {
+	stringMap := make(map[string]string)
+
+	urlBase := "https://apitransporte.buenosaires.gob.ar/colectivos/feed-gtfs-frequency"
+
+	req, err := http.NewRequest("GET", urlBase, nil)
+	if err != nil {
+		stringMap["error"] = err.Error()
+	}
+
+	q := req.URL.Query()
+	q.Add("client_id", clientID)
+	q.Add("client_secret", clientSecret)
+
+	req.URL.RawQuery = q.Encode()
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		stringMap["error"] = err.Error()
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		stringMap["error"] = fmt.Sprintf("Error getting request, response code: %d", resp.StatusCode)
+	}
+
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		stringMap["error"] = err.Error()
+	}
+
+	feed := gtfs.FeedMessage{}
+	err = proto.Unmarshal(body, &feed)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, entity := range feed.Entity {
+		tripUpdate := entity.GetTripUpdate()
+		trip := tripUpdate.GetTrip()
+		tripId := trip.GetTripId()
+		fmt.Printf("Trip ID: %s\n", tripId)
+	}
+
+	// stringMap["response"] = string(body)
+
+	// render.RenderTemplate(w, "positionsimple.page.tmpl", &model.TemplateData{
+	// 	StringMap: stringMap,
+	// })
 }
