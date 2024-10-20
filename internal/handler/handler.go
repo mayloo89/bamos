@@ -11,9 +11,9 @@ import (
 	"github.com/MobilityData/gtfs-realtime-bindings/golang/gtfs"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/mayloo89/bamos/pkg/config"
-	"github.com/mayloo89/bamos/pkg/model"
-	"github.com/mayloo89/bamos/pkg/render"
+	"github.com/mayloo89/bamos/internal/config"
+	"github.com/mayloo89/bamos/internal/model"
+	"github.com/mayloo89/bamos/internal/render"
 	"github.com/mayloo89/bamos/utils"
 )
 
@@ -44,7 +44,7 @@ func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
 	stringMap := make(map[string]string)
 	stringMap["test"] = "Hello again."
 
-	render.RenderTemplate(w, "home.page.tmpl", &model.TemplateData{
+	render.RenderTemplate(w, r, "home.page.tmpl", &model.TemplateData{
 		StringMap: stringMap,
 	})
 }
@@ -83,21 +83,39 @@ func (m *Repository) VehiclePositionsSimple(w http.ResponseWriter, r *http.Reque
 
 	stringMap["response"] = string(body)
 
-	render.RenderTemplate(w, "positionsimple.page.tmpl", &model.TemplateData{
+	render.RenderTemplate(w, r, "positionsimple.page.tmpl", &model.TemplateData{
 		StringMap: stringMap,
 	})
 }
 
 func (m *Repository) SearchLine(w http.ResponseWriter, r *http.Request) {
-	line := r.PathValue("line")
-
-	result := utils.SearchLine(line, m.App.DataCache.Routes)
-	resultString := strings.Replace(fmt.Sprintf("%+v", result), "} {", "} <br> {", -1)
-
 	templateMap := make(map[string]template.HTML)
-	templateMap["result"] = template.HTML(resultString)
 
-	render.RenderTemplate(w, "search.page.tmpl", &model.TemplateData{
+	render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
+		TemplateMap: templateMap,
+	})
+
+}
+
+// TODO: consider to use a json for the form values
+// by doing this we could expose the SearchLine as an API request
+func (m *Repository) PostSearchLine(w http.ResponseWriter, r *http.Request) {
+	templateMap := make(map[string]template.HTML)
+
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	line := r.Form.Get("line")
+	if line != "" {
+		result := utils.SearchLine(line, m.App.DataCache.Routes)
+		resultString := strings.Replace(fmt.Sprintf("%+v", result), "} {", "} <br> {", -1)
+
+		templateMap["result"] = template.HTML(resultString)
+
+	}
+	render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
 		TemplateMap: templateMap,
 	})
 

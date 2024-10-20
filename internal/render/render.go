@@ -2,13 +2,16 @@ package render
 
 import (
 	"bytes"
+	"errors"
 	"html/template"
 	"log"
 	"net/http"
 	"path/filepath"
+	"strconv"
 
-	"github.com/mayloo89/bamos/pkg/config"
-	"github.com/mayloo89/bamos/pkg/model"
+	"github.com/justinas/nosurf"
+	"github.com/mayloo89/bamos/internal/config"
+	"github.com/mayloo89/bamos/internal/model"
 )
 
 var app *config.AppConfig
@@ -17,12 +20,12 @@ func NewTemplates(a *config.AppConfig) {
 	app = a
 }
 
-func AddDefaultData(tmplData *model.TemplateData) *model.TemplateData {
-
+func AddDefaultData(tmplData *model.TemplateData, r *http.Request) *model.TemplateData {
+	tmplData.CSRFToken = nosurf.Token(r)
 	return tmplData
 }
 
-func RenderTemplate(w http.ResponseWriter, tmpl string, tmplData *model.TemplateData) {
+func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplData *model.TemplateData) {
 	var tc map[string]*template.Template
 	var err error
 
@@ -39,12 +42,12 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, tmplData *model.Template
 	// get requested template from cache
 	t, ok := tc[tmpl]
 	if !ok {
-		log.Fatal("Template do not exist in cache")
+		log.Fatal("Template " + tmpl + " does not exist in cache (len " + strconv.Itoa(len(tc)) + ")")
 	}
 
 	buf := new(bytes.Buffer)
 
-	tmplData = AddDefaultData(tmplData)
+	tmplData = AddDefaultData(tmplData, r)
 
 	err = t.Execute(buf, tmplData)
 	if err != nil {
@@ -61,10 +64,20 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, tmplData *model.Template
 func CreateTemplateCache() (map[string]*template.Template, error) {
 	myCache := map[string]*template.Template{}
 
-	// get all the *page.tmpl files from templates dir
-	pages, err := filepath.Glob("../../templates/*.page.tmpl")
+	dir, err := filepath.Abs("./templates/")
 	if err != nil {
 		return myCache, err
+	}
+
+	pagesGlob := filepath.Join(dir, "*.page.tmpl")
+	layoutGlob := filepath.Join(dir, "*.layout.tmpl")
+
+	// get all the *page.tmpl files from templates dir
+	pages, err := filepath.Glob(pagesGlob)
+	if err != nil {
+		return myCache, err
+	} else if len(pages) <= 0 {
+		return myCache, errors.New("no pages found")
 	}
 
 	for _, page := range pages {
@@ -74,13 +87,13 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 			return myCache, err
 		}
 
-		layouts, err := filepath.Glob("../../templates/*.layout.tmpl")
+		layouts, err := filepath.Glob(layoutGlob)
 		if err != nil {
 			return myCache, err
 		}
 
 		if len(layouts) > 0 {
-			ts, err = ts.ParseGlob("../../templates/*.layout.tmpl")
+			ts, err = ts.ParseGlob(layoutGlob)
 			if err != nil {
 				return myCache, err
 			}
@@ -90,5 +103,4 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 	}
 
 	return myCache, nil
-
 }
