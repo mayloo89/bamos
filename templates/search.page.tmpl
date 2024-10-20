@@ -1,19 +1,59 @@
 
 {{template "base" .}}
+
+{{define "css"}}
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/notie/dist/notie.min.css">
+{{end}}
+
 {{define "content"}}
     <div class="container">
         <div class="row">
             <div class="col">
                 <h1>This is the Search page.</h1>
-                <p class="text-bg-secondary p-3">Here you can see the result of the search.</p>
+                
+                <form action="/colectivos/search" method="post" class="mb-3">
+                    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                    <div class="mb-3">
+                        <label for="inputLinea" class="form-label">Line</label>
+                        <input type="number" class="form-control" id="inputLinea" name="line" aria-describedby="lineaHelp">
+                        <div id="lineaHelp" class="form-text">Type the numer of the bus line to search.</div>
+                    </div>
 
+                    <button id="submit" type="submit" class="btn btn-primary">Search</button>
+                </form>
 
-                <p>
-                    Result: <br>
-                    {{index .TemplateMap "result"}}
-                </p>
-
+                {{if .TemplateMap.result}}
+                    <p class="text-bg-secondary p-3">Here you can see the result of the search.</p>
+                    <p>
+                        Result: <br>
+                        {{index .TemplateMap "result"}}
+                    </p>
+                {{end}}
             </div>
         </div>
     </div>
+{{end}}
+
+{{define "js"}}
+<script src="https://unpkg.com/notie"></script>
+<script>
+    let submitButton = document.getElementById("submit")
+    submitButton.addEventListener("click", function () {
+        if (document.getElementById("inputLinea").value < 0 ||
+        document.getElementById("inputLinea").value > 999){
+            event.preventDefault();
+            event.stopPropagation();
+            notify("Line number must be between 1 and 999", "error");
+        }
+    })
+
+    function notify(msg, type){
+        notie.alert({
+        type: type,
+        text: msg,
+        time: 5, 
+        position: "top"
+        })
+    }
+</script>
 {{end}}

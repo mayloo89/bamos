@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/alexedwards/scs/v2"
-	"github.com/mayloo89/bamos/pkg/config"
-	"github.com/mayloo89/bamos/pkg/handler"
-	"github.com/mayloo89/bamos/pkg/render"
+	"github.com/mayloo89/bamos/internal/config"
+	"github.com/mayloo89/bamos/internal/handler"
+	"github.com/mayloo89/bamos/internal/render"
 	"github.com/mayloo89/bamos/utils"
 )
 
@@ -32,23 +32,23 @@ func main() {
 
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
-		log.Fatal("Can not create template cache: " + err.Error())
+		log.Fatal("can not create template cache: " + err.Error())
 	}
 
 	app.TemplateCache = tc
 	app.UseCache = false
 	app.DataCache.Routes = utils.GetRoutes()
 	if len(app.DataCache.Routes) <= 0 {
-		fmt.Printf("No routes were loaded in the cache.\n")
+		fmt.Printf("no routes were loaded in the cache\n")
 	}
-	fmt.Printf("Routes cache loaded with %d routes.\n", len(app.DataCache.Routes))
+	fmt.Printf("routes cache loaded with %d routes.\n", len(app.DataCache.Routes))
 
 	repo := handler.NewRepo(&app)
 	handler.NewHandler(repo)
 
 	render.NewTemplates(&app)
 
-	fmt.Printf("Starting application at port %s \n", portNumber)
+	fmt.Printf("starting application at port %s \n", portNumber)
 
 	srv := &http.Server{
 		Addr:    portNumber,
