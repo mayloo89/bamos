@@ -11,22 +11,26 @@
             <div class="col">
                 <h1>This is the Search page.</h1>
                 
+                {{$line := index .Data "line"}}
                 <form action="/colectivos/search" method="post" class="mb-3">
                     <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
                     <div class="mb-3">
                         <label for="inputLinea" class="form-label">Line</label>
-                        <input type="number" class="form-control" id="inputLinea" name="line" aria-describedby="lineaHelp">
+                        {{with .Form.Errors.Get "line"}}
+                            <label class="text-danger">{{.}}</label>
+                        {{end}}
+                        <input type="number" class="form-control {{with .Form.Errors.Get "line"}} is-invalid {{end}}" id="inputLinea" name="line" value="{{$line}}" aria-describedby="lineaHelp">
                         <div id="lineaHelp" class="form-text">Type the numer of the bus line to search.</div>
                     </div>
 
                     <button id="submit" type="submit" class="btn btn-primary">Search</button>
                 </form>
 
-                {{if .TemplateMap.result}}
+                {{if .Data.result}}
                     <p class="text-bg-secondary p-3">Here you can see the result of the search.</p>
                     <p>
                         Result: <br>
-                        {{index .TemplateMap "result"}}
+                        {{index .Data "result"}}
                     </p>
                 {{end}}
             </div>

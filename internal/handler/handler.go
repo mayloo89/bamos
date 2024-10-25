@@ -12,6 +12,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/mayloo89/bamos/internal/config"
+	"github.com/mayloo89/bamos/internal/forms"
 	"github.com/mayloo89/bamos/internal/model"
 	"github.com/mayloo89/bamos/internal/render"
 	"github.com/mayloo89/bamos/utils"
@@ -89,10 +90,12 @@ func (m *Repository) VehiclePositionsSimple(w http.ResponseWriter, r *http.Reque
 }
 
 func (m *Repository) SearchLine(w http.ResponseWriter, r *http.Request) {
-	templateMap := make(map[string]template.HTML)
+	data := make(map[string]interface{})
+	data["line"] = ""
 
 	render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
-		TemplateMap: templateMap,
+		Form: forms.New(nil),
+		Data: data,
 	})
 
 }
@@ -100,7 +103,7 @@ func (m *Repository) SearchLine(w http.ResponseWriter, r *http.Request) {
 // TODO: consider to use a json for the form values
 // by doing this we could expose the SearchLine as an API request
 func (m *Repository) PostSearchLine(w http.ResponseWriter, r *http.Request) {
-	templateMap := make(map[string]template.HTML)
+	data := make(map[string]interface{})
 
 	err := r.ParseForm()
 	if err != nil {
@@ -108,15 +111,27 @@ func (m *Repository) PostSearchLine(w http.ResponseWriter, r *http.Request) {
 	}
 
 	line := r.Form.Get("line")
-	if line != "" {
-		result := utils.SearchLine(line, m.App.DataCache.Routes)
-		resultString := strings.Replace(fmt.Sprintf("%+v", result), "} {", "} <br> {", -1)
 
-		templateMap["result"] = template.HTML(resultString)
+	form := forms.New(r.PostForm)
+	form.Required("line")
 
+	if !form.Valid() {
+		render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
+			Form: form,
+			Data: data,
+		})
+		return
 	}
+
+	result := utils.SearchLine(line, m.App.DataCache.Routes)
+	resultString := strings.Replace(fmt.Sprintf("%+v", result), "} {", "} <br> {", -1)
+
+	data["result"] = template.HTML(resultString)
+	data["line"] = line
+
 	render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
-		TemplateMap: templateMap,
+		Form: form,
+		Data: data,
 	})
 
 }
