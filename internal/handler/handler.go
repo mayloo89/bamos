@@ -45,9 +45,12 @@ func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
 	stringMap := make(map[string]string)
 	stringMap["test"] = "Hello again."
 
-	render.RenderTemplate(w, r, "home.page.tmpl", &model.TemplateData{
+	err := render.RenderTemplate(w, r, "home.page.tmpl", &model.TemplateData{
 		StringMap: stringMap,
 	})
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (m *Repository) VehiclePositionsSimple(w http.ResponseWriter, r *http.Request) {
@@ -84,20 +87,25 @@ func (m *Repository) VehiclePositionsSimple(w http.ResponseWriter, r *http.Reque
 
 	stringMap["response"] = string(body)
 
-	render.RenderTemplate(w, r, "positionsimple.page.tmpl", &model.TemplateData{
+	err = render.RenderTemplate(w, r, "positionsimple.page.tmpl", &model.TemplateData{
 		StringMap: stringMap,
 	})
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (m *Repository) SearchLine(w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]interface{})
 	data["line"] = ""
 
-	render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
+	err := render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
 		Form: forms.New(nil),
 		Data: data,
 	})
-
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // TODO: consider to use a json for the form values
@@ -116,10 +124,14 @@ func (m *Repository) PostSearchLine(w http.ResponseWriter, r *http.Request) {
 	form.Required("line")
 
 	if !form.Valid() {
-		render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
+		err := render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
 			Form: form,
 			Data: data,
 		})
+		if err != nil {
+			log.Println(err)
+		}
+
 		return
 	}
 
@@ -129,11 +141,13 @@ func (m *Repository) PostSearchLine(w http.ResponseWriter, r *http.Request) {
 	data["result"] = template.HTML(resultString)
 	data["line"] = line
 
-	render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
+	err = render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
 		Form: form,
 		Data: data,
 	})
-
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 // FIXME: this func doesn't work
