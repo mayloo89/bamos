@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 
@@ -25,7 +26,7 @@ func AddDefaultData(tmplData *model.TemplateData, r *http.Request) *model.Templa
 	return tmplData
 }
 
-func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplData *model.TemplateData) {
+func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplData *model.TemplateData) error {
 	var tc map[string]*template.Template
 	var err error
 
@@ -35,6 +36,7 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplDat
 	} else {
 		tc, err = CreateTemplateCache()
 		if err != nil {
+			// FIXME: return error here
 			log.Fatal(err)
 		}
 	}
@@ -42,7 +44,7 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplDat
 	// get requested template from cache
 	t, ok := tc[tmpl]
 	if !ok {
-		log.Fatal("Template " + tmpl + " does not exist in cache (len " + strconv.Itoa(len(tc)) + ")")
+		return errors.New("Template " + tmpl + " does not exist in cache (len " + strconv.Itoa(len(tc)) + ")")
 	}
 
 	buf := new(bytes.Buffer)
@@ -51,26 +53,29 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplDat
 
 	err = t.Execute(buf, tmplData)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 
 	// render the template
 	_, err = buf.WriteTo(w)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
+
+	return nil
 }
 
 func CreateTemplateCache() (map[string]*template.Template, error) {
 	myCache := map[string]*template.Template{}
 
-	dir, err := filepath.Abs("./templates/")
+	// Get the current working directory
+	rootPath, err := getRootPath()
 	if err != nil {
 		return myCache, err
 	}
 
-	pagesGlob := filepath.Join(dir, "*.page.tmpl")
-	layoutGlob := filepath.Join(dir, "*.layout.tmpl")
+	pagesGlob := rootPath + "/templates/*.page.tmpl"    // filepath.Join(dir, "*.page.tmpl")
+	layoutGlob := rootPath + "/templates/*.layout.tmpl" // filepath.Join(dir, "*.layout.tmpl")
 
 	// get all the *page.tmpl files from templates dir
 	pages, err := filepath.Glob(pagesGlob)
@@ -103,4 +108,29 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 	}
 
 	return myCache, nil
+}
+
+// getRootPath returns the root path of the application
+func getRootPath() (string, error) {
+	// Get the current working directory
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	// Find the root directory (assuming the root directory contains a specific file or directory)
+	rootPath := cwd
+	for {
+		if _, err := os.Stat(filepath.Join(rootPath, "go.mod")); err == nil {
+			break
+		}
+
+		parent := filepath.Dir(rootPath)
+		if parent == rootPath {
+			return "", errors.New("root path not found")
+		}
+		rootPath = parent
+	}
+
+	return rootPath, nil
 }
