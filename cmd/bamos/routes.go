@@ -22,7 +22,7 @@ func routes(app *config.AppConfig) http.Handler {
 
 	mux.Get("/", handler.Repo.Home)
 	mux.Get("/colectivos/vehiclePositionsSimple", handler.Repo.VehiclePositionsSimple)
-	mux.Get("/colectivos/feed-gtfs-frequency", handler.Repo.FeedGtfsFrequency)
+	// mux.Get("/colectivos/feed-gtfs-frequency", handler.Repo.FeedGtfsFrequency)
 
 	mux.Get("/colectivos/search", handler.Repo.SearchLine)
 	mux.Post("/colectivos/search", handler.Repo.PostSearchLine)

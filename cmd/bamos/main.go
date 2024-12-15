@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/alexedwards/scs/v2"
+
 	"github.com/mayloo89/bamos/internal/config"
 	"github.com/mayloo89/bamos/internal/handler"
 	"github.com/mayloo89/bamos/internal/render"
@@ -19,8 +20,25 @@ var app config.AppConfig
 var session *scs.SessionManager
 
 func main() {
+	err := run()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	//TODO: change this when in production
+	fmt.Printf("starting application at port %s \n", portNumber)
+	srv := &http.Server{
+		Addr:    portNumber,
+		Handler: routes(&app),
+	}
+
+	err = srv.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
+	// change this when in production
 	app.InProduction = false
 
 	session = scs.New()
@@ -48,15 +66,5 @@ func main() {
 
 	render.NewTemplates(&app)
 
-	fmt.Printf("starting application at port %s \n", portNumber)
-
-	srv := &http.Server{
-		Addr:    portNumber,
-		Handler: routes(&app),
-	}
-
-	err = srv.ListenAndServe()
-	if err != nil {
-		log.Fatal(err)
-	}
+	return nil
 }
