@@ -1,6 +1,7 @@
 package render
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"testing"
@@ -23,6 +24,10 @@ func TestMain(m *testing.M) {
 	session.Cookie.SameSite = http.SameSiteLaxMode
 	session.Cookie.Secure = false
 	testApp.Session = session
+
+	// set up the loggers
+	testApp.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	testApp.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	app = &testApp
 

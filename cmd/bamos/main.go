@@ -4,12 +4,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/alexedwards/scs/v2"
 
 	"github.com/mayloo89/bamos/internal/config"
 	"github.com/mayloo89/bamos/internal/handler"
+	"github.com/mayloo89/bamos/internal/helpers"
 	"github.com/mayloo89/bamos/internal/render"
 	"github.com/mayloo89/bamos/utils"
 )
@@ -41,6 +43,10 @@ func run() error {
 	// change this when in production
 	app.InProduction = false
 
+	// set up the loggers
+	app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
 	session = scs.New()
 	session.Lifetime = 24 * time.Hour
 	session.Cookie.Persist = true
@@ -63,8 +69,8 @@ func run() error {
 
 	repo := handler.NewRepo(&app)
 	handler.NewHandler(repo)
-
 	render.NewTemplates(&app)
+	helpers.NewHelpers(&app)
 
 	return nil
 }

@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -41,6 +42,10 @@ func getRoutes() http.Handler {
 
 	app.TemplateCache = tc
 	app.UseCache = true
+	// set up the loggers
+	app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
 	app.DataCache.Routes = utils.GetRoutes()
 	if len(app.DataCache.Routes) <= 0 {
 		fmt.Printf("no routes were loaded in the cache\n")
