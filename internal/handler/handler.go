@@ -13,6 +13,7 @@ import (
 
 	"github.com/mayloo89/bamos/internal/config"
 	"github.com/mayloo89/bamos/internal/forms"
+	"github.com/mayloo89/bamos/internal/helpers"
 	"github.com/mayloo89/bamos/internal/model"
 	"github.com/mayloo89/bamos/internal/render"
 	"github.com/mayloo89/bamos/utils"
@@ -49,7 +50,7 @@ func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
 		StringMap: stringMap,
 	})
 	if err != nil {
-		log.Println(err)
+		helpers.ServerError(w, err)
 	}
 }
 
@@ -91,7 +92,7 @@ func (m *Repository) VehiclePositionsSimple(w http.ResponseWriter, r *http.Reque
 		StringMap: stringMap,
 	})
 	if err != nil {
-		log.Println(err)
+		helpers.ServerError(w, err)
 	}
 }
 
@@ -104,7 +105,7 @@ func (m *Repository) SearchLine(w http.ResponseWriter, r *http.Request) {
 		Data: data,
 	})
 	if err != nil {
-		log.Println(err)
+		helpers.ServerError(w, err)
 	}
 }
 
@@ -129,7 +130,7 @@ func (m *Repository) PostSearchLine(w http.ResponseWriter, r *http.Request) {
 			Data: data,
 		})
 		if err != nil {
-			log.Println(err)
+			helpers.ServerError(w, err)
 		}
 
 		return
@@ -146,7 +147,7 @@ func (m *Repository) PostSearchLine(w http.ResponseWriter, r *http.Request) {
 		Data: data,
 	})
 	if err != nil {
-		log.Println(err)
+		helpers.ServerError(w, err)
 	}
 }
 
