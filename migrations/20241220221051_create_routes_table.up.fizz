@@ -1,0 +1,9 @@
+create_table("routes") {
+    t.Column("id", "integer", {primary: true})
+	t.Column("route_id", "integer", {})
+	t.Column("agency_id", "integer", {})
+	t.Column("route_short_name", "string", {size: 255})
+	t.Column("route_long_name", "string", {size: 255})
+	t.Column("route_desc", "text", {})
+	t.Column("route_type", "integer", {})
+}
