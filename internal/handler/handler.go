@@ -12,10 +12,13 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/mayloo89/bamos/internal/config"
+	"github.com/mayloo89/bamos/internal/driver"
 	"github.com/mayloo89/bamos/internal/forms"
 	"github.com/mayloo89/bamos/internal/helpers"
 	"github.com/mayloo89/bamos/internal/model"
 	"github.com/mayloo89/bamos/internal/render"
+	"github.com/mayloo89/bamos/internal/repository"
+	"github.com/mayloo89/bamos/internal/repository/database"
 	"github.com/mayloo89/bamos/utils"
 )
 
@@ -26,13 +29,15 @@ var clientSecret = "REPLACED"
 type (
 	Repository struct {
 		App *config.AppConfig
+		DB  repository.DBRepository
 	}
 )
 
 // NewRepo creates a new repository
-func NewRepo(a *config.AppConfig) *Repository {
+func NewRepo(a *config.AppConfig, db *driver.DB) *Repository {
 	return &Repository{
 		App: a,
+		DB:  database.NewPostgreDatabase(db.SQL, a),
 	}
 }
 
@@ -46,7 +51,7 @@ func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
 	stringMap := make(map[string]string)
 	stringMap["test"] = "Hello again."
 
-	err := render.RenderTemplate(w, r, "home.page.tmpl", &model.TemplateData{
+	err := render.Template(w, r, "home.page.tmpl", &model.TemplateData{
 		StringMap: stringMap,
 	})
 	if err != nil {
@@ -88,7 +93,7 @@ func (m *Repository) VehiclePositionsSimple(w http.ResponseWriter, r *http.Reque
 
 	stringMap["response"] = string(body)
 
-	err = render.RenderTemplate(w, r, "positionsimple.page.tmpl", &model.TemplateData{
+	err = render.Template(w, r, "positionsimple.page.tmpl", &model.TemplateData{
 		StringMap: stringMap,
 	})
 	if err != nil {
@@ -100,7 +105,7 @@ func (m *Repository) SearchLine(w http.ResponseWriter, r *http.Request) {
 	data := make(map[string]interface{})
 	data["line"] = ""
 
-	err := render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
+	err := render.Template(w, r, "search.page.tmpl", &model.TemplateData{
 		Form: forms.New(nil),
 		Data: data,
 	})
@@ -125,7 +130,7 @@ func (m *Repository) PostSearchLine(w http.ResponseWriter, r *http.Request) {
 	form.Required("line")
 
 	if !form.Valid() {
-		err := render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
+		err := render.Template(w, r, "search.page.tmpl", &model.TemplateData{
 			Form: form,
 			Data: data,
 		})
@@ -142,7 +147,7 @@ func (m *Repository) PostSearchLine(w http.ResponseWriter, r *http.Request) {
 	data["result"] = template.HTML(resultString)
 	data["line"] = line
 
-	err = render.RenderTemplate(w, r, "search.page.tmpl", &model.TemplateData{
+	err = render.Template(w, r, "search.page.tmpl", &model.TemplateData{
 		Form: form,
 		Data: data,
 	})
@@ -200,7 +205,7 @@ func (m *Repository) FeedGtfsFrequency(w http.ResponseWriter, r *http.Request) {
 
 	// stringMap["response"] = string(body)
 
-	// render.RenderTemplate(w, "positionsimple.page.tmpl", &model.TemplateData{
+	// render.Template(w, "positionsimple.page.tmpl", &model.TemplateData{
 	// 	StringMap: stringMap,
 	// })
 }

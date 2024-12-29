@@ -52,10 +52,10 @@ func getRoutes() http.Handler {
 	}
 	fmt.Printf("routes cache loaded with %d routes.\n", len(app.DataCache.Routes))
 
-	repo := NewRepo(&app)
+	repo := NewTestRepo(&app)
 	NewHandler(repo)
 
-	render.NewTemplates(&app)
+	render.NewRenderer(&app)
 
 	mux := chi.NewRouter()
 
@@ -138,4 +138,11 @@ func CreateTestTemplateCache() (map[string]*template.Template, error) {
 	}
 
 	return myCache, nil
+}
+
+// NewRepo creates a new repository
+func NewTestRepo(a *config.AppConfig) *Repository {
+	return &Repository{
+		App: a,
+	}
 }

@@ -1,0 +1,3 @@
+drop_index("routes", "routes_route_id_idx")
+drop_index("routes", "routes_agency_id_idx")
+drop_index("routes", "routes_route_short_name_idx")

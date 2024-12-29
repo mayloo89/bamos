@@ -9,7 +9,8 @@ import (
 func Test_run_Success(t *testing.T) {
 	assert := assert.New(t)
 
-	err := run()
+	db, err := run()
 
 	assert.Nil(err)
+	assert.NotNil(db)
 }

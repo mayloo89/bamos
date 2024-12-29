@@ -17,7 +17,7 @@ import (
 
 var app *config.AppConfig
 
-func NewTemplates(a *config.AppConfig) {
+func NewRenderer(a *config.AppConfig) {
 	app = a
 }
 
@@ -26,7 +26,7 @@ func AddDefaultData(tmplData *model.TemplateData, r *http.Request) *model.Templa
 	return tmplData
 }
 
-func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, tmplData *model.TemplateData) error {
+func Template(w http.ResponseWriter, r *http.Request, tmpl string, tmplData *model.TemplateData) error {
 	var tc map[string]*template.Template
 	var err error
 

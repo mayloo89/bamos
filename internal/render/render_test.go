@@ -25,7 +25,7 @@ func Test_AddDefaultData_Success(t *testing.T) {
 	assert.NotNil(result.CSRFToken)
 }
 
-func Test_RenderTemplate_Success(t *testing.T) {
+func Test_Template_Success(t *testing.T) {
 	assert := assert.New(t)
 	required := require.New(t)
 
@@ -41,12 +41,12 @@ func Test_RenderTemplate_Success(t *testing.T) {
 
 	var ww testWriter
 
-	err = RenderTemplate(&ww, r, "home.page.tmpl", &td)
+	err = Template(&ww, r, "home.page.tmpl", &td)
 
 	assert.Nil(err)
 }
 
-func Test_RenderTemplate_Error(t *testing.T) {
+func Test_Template_Error(t *testing.T) {
 	assert := assert.New(t)
 	required := require.New(t)
 
@@ -62,14 +62,14 @@ func Test_RenderTemplate_Error(t *testing.T) {
 
 	var ww testWriter
 
-	err = RenderTemplate(&ww, r, "non-existent.page.tmpl", &td)
+	err = Template(&ww, r, "non-existent.page.tmpl", &td)
 
 	assert.NotNil(err)
 	assert.Equal("Template non-existent.page.tmpl does not exist in cache (len 3)", err.Error())
 }
 
-func Test_NewTemplate(t *testing.T) {
-	NewTemplates(app)
+func Test_NewRenderer(t *testing.T) {
+	NewRenderer(app)
 }
 
 func Test_CreateTemplateCache(t *testing.T) {
