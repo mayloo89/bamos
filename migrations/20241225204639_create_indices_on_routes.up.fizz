@@ -1,0 +1,3 @@
+add_index("routes", "route_id", {})
+add_index("routes", "agency_id", {})
+add_index("routes", "route_short_name", {})
