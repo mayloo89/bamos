@@ -20,12 +20,20 @@ type Route struct {
 
 func GetRoutes() []Route {
 	var routes []Route
-	csvFile, err := os.OpenFile("/Users/ssourigues/github.com/mayloo89/bamos/static/routesinfo/routes.txt", os.O_RDONLY, os.ModePerm)
+	path := os.Getenv("ROUTES_FILE")
+	if path == "" {
+		path = "../../static/routesinfo/routes.txt"
+	}
+	csvFile, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
 
-	defer csvFile.Close()
+	defer func() {
+		if cerr := csvFile.Close(); cerr != nil {
+			log.Println("error closing csv file:", cerr)
+		}
+	}()
 
 	reaader := csv.NewReader(csvFile)
 	for {

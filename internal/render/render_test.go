@@ -2,6 +2,7 @@ package render
 
 import (
 	"net/http"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -65,7 +66,7 @@ func Test_RenderTemplate_Error(t *testing.T) {
 	err = RenderTemplate(&ww, r, "non-existent.page.tmpl", &td)
 
 	assert.NotNil(err)
-	assert.Equal("Template non-existent.page.tmpl does not exist in cache (len 3)", err.Error())
+	assert.Equal("Template non-existent.page.tmpl does not exist in cache (len "+strconv.Itoa(len(tc))+")", err.Error())
 }
 
 func Test_NewTemplate(t *testing.T) {
@@ -79,7 +80,7 @@ func Test_CreateTemplateCache(t *testing.T) {
 	tc, err := CreateTemplateCache()
 	required.Nil(err)
 
-	assert.Equal(3, len(tc))
+	assert.Equal(4, len(tc))
 }
 
 func getTestSession() (*http.Request, error) {
