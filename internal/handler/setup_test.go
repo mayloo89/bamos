@@ -2,78 +2,20 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"html/template"
-	"log"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
-	"time"
+	"testing"
 
 	"github.com/alexedwards/scs/v2"
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
 	"github.com/justinas/nosurf"
 
 	"github.com/mayloo89/bamos/internal/config"
-	"github.com/mayloo89/bamos/internal/render"
-	"github.com/mayloo89/bamos/utils"
 )
 
 var app config.AppConfig
 var session *scs.SessionManager
-
-func getRoutes() http.Handler {
-	// change this when in production
-	app.InProduction = false
-
-	session = scs.New()
-	session.Lifetime = 24 * time.Hour
-	session.Cookie.Persist = true
-	session.Cookie.SameSite = http.SameSiteLaxMode
-	session.Cookie.Secure = app.InProduction
-	app.Session = session
-
-	tc, err := CreateTestTemplateCache()
-	if err != nil {
-		log.Fatal("can not create template cache: " + err.Error())
-	}
-
-	app.TemplateCache = tc
-	app.UseCache = true
-	// set up the loggers
-	app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
-	app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
-
-	app.DataCache.Routes = utils.GetRoutes()
-	if len(app.DataCache.Routes) <= 0 {
-		fmt.Printf("no routes were loaded in the cache\n")
-	}
-	fmt.Printf("routes cache loaded with %d routes.\n", len(app.DataCache.Routes))
-
-	repo := NewRepo(&app)
-	NewHandler(repo)
-
-	render.NewTemplates(&app)
-
-	mux := chi.NewRouter()
-
-	mux.Use(middleware.Recoverer)
-	mux.Use(SessionLoad)
-
-	fileServer := http.FileServer(http.Dir("./static/"))
-	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
-
-	mux.Get("/", Repo.Home)
-	mux.Get("/colectivos/vehiclePositionsSimple", Repo.VehiclePositionsSimple)
-	mux.Get("/colectivos/feed-gtfs-frequency", Repo.FeedGtfsFrequency)
-
-	mux.Get("/colectivos/search", Repo.SearchLine)
-	mux.Post("/colectivos/search", Repo.PostSearchLine)
-
-	return mux
-}
 
 // NoSurf adds CSRF protection to all POST request
 func NoSurf(next http.Handler) http.Handler {
@@ -138,4 +80,8 @@ func CreateTestTemplateCache() (map[string]*template.Template, error) {
 	}
 
 	return myCache, nil
+}
+
+func TestCreateTestTemplateCache(t *testing.T) {
+	// your test code here
 }
