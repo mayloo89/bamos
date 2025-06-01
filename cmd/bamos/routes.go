@@ -27,5 +27,9 @@ func routes(app *config.AppConfig) http.Handler {
 	mux.Get("/colectivos/search", handler.Repo.SearchLine)
 	mux.Post("/colectivos/search", handler.Repo.PostSearchLine)
 
+	// Allowed Parking
+	mux.Get("/transit/allowed-parking", handler.Repo.AllowedParking)
+	mux.Post("/transit/allowed-parking", handler.Repo.PostAllowedParking)
+
 	return mux
 }

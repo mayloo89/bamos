@@ -13,6 +13,7 @@ import (
 	"github.com/mayloo89/bamos/internal/handler"
 	"github.com/mayloo89/bamos/internal/helpers"
 	"github.com/mayloo89/bamos/internal/render"
+	"github.com/mayloo89/bamos/internal/services"
 	"github.com/mayloo89/bamos/utils"
 )
 
@@ -67,7 +68,8 @@ func run() error {
 	}
 	fmt.Printf("routes cache loaded with %d routes.\n", len(app.DataCache.Routes))
 
-	repo := handler.NewRepo(&app)
+	apiClient := services.NewAPIClient()
+	repo := handler.NewRepo(&app, apiClient)
 	handler.NewHandler(repo)
 	render.NewTemplates(&app)
 	helpers.NewHelpers(&app)
