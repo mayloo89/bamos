@@ -19,15 +19,15 @@ import (
 	"github.com/mayloo89/bamos/internal/services"
 )
 
-func setupTestApp(mockAPIClient services.APIClient) {
-	app = config.AppConfig{
+func setupTestApp(mockAPIClient services.APIClient) (*Repository, *config.AppConfig) {
+	app := &config.AppConfig{
 		InProduction: false,
 		InfoLog:      log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime),
 	}
-	repo := NewRepo(&app, mockAPIClient)
-	NewHandler(repo)
-	render.NewTemplates(&app)
-	helpers.NewHelpers(&app)
+	repo := NewRepo(app, mockAPIClient)
+	render.NewTemplates(app)
+	helpers.NewHelpers(app)
+	return repo, app
 }
 
 func Test_Home(t *testing.T) {
@@ -35,13 +35,13 @@ func Test_Home(t *testing.T) {
 	mockAPIClient := new(services.MockAPIClient)
 	mockAPIClient.On("AllowedParking", mock.Anything, mock.Anything).Return(nil, nil)
 
-	setupTestApp(mockAPIClient)
+	repo, _ := setupTestApp(mockAPIClient)
 
 	req, err := http.NewRequest("GET", "/", nil)
 	require.NoError(t, err)
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(Repo.Home)
+	handler := http.HandlerFunc(repo.Home)
 
 	handler.ServeHTTP(rr, req)
 
@@ -53,13 +53,13 @@ func Test_VehiclePositionsSimple(t *testing.T) {
 	mockAPIClient := new(services.MockAPIClient)
 	mockAPIClient.On("AllowedParking", mock.Anything, mock.Anything).Return(nil, nil)
 
-	setupTestApp(mockAPIClient)
+	repo, _ := setupTestApp(mockAPIClient)
 
 	req, err := http.NewRequest("GET", "/colectivos/vehiclePositionsSimple", nil)
 	require.NoError(t, err)
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(Repo.VehiclePositionsSimple)
+	handler := http.HandlerFunc(repo.VehiclePositionsSimple)
 
 	handler.ServeHTTP(rr, req)
 
@@ -71,13 +71,13 @@ func Test_SearchLine(t *testing.T) {
 	mockAPIClient := new(services.MockAPIClient)
 	mockAPIClient.On("AllowedParking", mock.Anything, mock.Anything).Return(nil, nil)
 
-	setupTestApp(mockAPIClient)
+	repo, _ := setupTestApp(mockAPIClient)
 
 	req, err := http.NewRequest("GET", "/colectivos/search", nil)
 	require.NoError(t, err)
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(Repo.SearchLine)
+	handler := http.HandlerFunc(repo.SearchLine)
 
 	handler.ServeHTTP(rr, req)
 
@@ -89,7 +89,7 @@ func Test_PostSearchLine_Success(t *testing.T) {
 	mockAPIClient := new(services.MockAPIClient)
 	mockAPIClient.On("AllowedParking", mock.Anything, mock.Anything).Return(nil, nil)
 
-	setupTestApp(mockAPIClient)
+	repo, _ := setupTestApp(mockAPIClient)
 
 	form := url.Values{}
 	form.Add("line", "test-line")
@@ -99,7 +99,7 @@ func Test_PostSearchLine_Success(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(Repo.PostSearchLine)
+	handler := http.HandlerFunc(repo.PostSearchLine)
 
 	handler.ServeHTTP(rr, req)
 
@@ -111,13 +111,13 @@ func Test_AllowedParking(t *testing.T) {
 	mockAPIClient := new(services.MockAPIClient)
 	mockAPIClient.On("AllowedParking", mock.Anything, mock.Anything).Return(nil, nil)
 
-	setupTestApp(mockAPIClient)
+	repo, _ := setupTestApp(mockAPIClient)
 
 	req, err := http.NewRequest("GET", "/transit/allowed-parking", nil)
 	require.NoError(t, err)
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(Repo.AllowedParking)
+	handler := http.HandlerFunc(repo.AllowedParking)
 
 	handler.ServeHTTP(rr, req)
 
@@ -130,7 +130,7 @@ func Test_PostAllowedParking_Success(t *testing.T) {
 	mockAPIClient.On("ParkingRules", 40.7128, -74.0060).Return(
 		services.SimplifiedRules{"Test Rule": {"Detail 1"}}, nil,
 	)
-	setupTestApp(mockAPIClient)
+	repo, _ := setupTestApp(mockAPIClient)
 
 	form := url.Values{}
 	form.Add("latitude", "40.7128")
@@ -142,7 +142,7 @@ func Test_PostAllowedParking_Success(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(Repo.PostAllowedParking)
+	handler := http.HandlerFunc(repo.PostAllowedParking)
 
 	handler.ServeHTTP(rr, req)
 
@@ -155,7 +155,7 @@ func Test_PostAllowedParking_EmptyRules(t *testing.T) {
 	mockAPIClient.On("ParkingRules", 40.7128, -74.0060).Return(
 		services.SimplifiedRules{}, nil,
 	)
-	setupTestApp(mockAPIClient)
+	repo, _ := setupTestApp(mockAPIClient)
 
 	form := url.Values{}
 	form.Add("latitude", "40.7128")
@@ -167,7 +167,7 @@ func Test_PostAllowedParking_EmptyRules(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(Repo.PostAllowedParking)
+	handler := http.HandlerFunc(repo.PostAllowedParking)
 
 	handler.ServeHTTP(rr, req)
 
@@ -177,7 +177,7 @@ func Test_PostAllowedParking_EmptyRules(t *testing.T) {
 func Test_PostAllowedParking_ValidationLatitudeError(t *testing.T) {
 	// Create a mock API client
 	mockAPIClient := new(services.MockAPIClient)
-	setupTestApp(mockAPIClient)
+	repo, _ := setupTestApp(mockAPIClient)
 
 	form := url.Values{}
 	form.Add("latitude", "ERROR")
@@ -189,7 +189,7 @@ func Test_PostAllowedParking_ValidationLatitudeError(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(Repo.PostAllowedParking)
+	handler := http.HandlerFunc(repo.PostAllowedParking)
 
 	handler.ServeHTTP(rr, req)
 
@@ -199,7 +199,7 @@ func Test_PostAllowedParking_ValidationLatitudeError(t *testing.T) {
 func Test_PostAllowedParking_ValidationLongitudeError(t *testing.T) {
 	// Create a mock API client
 	mockAPIClient := new(services.MockAPIClient)
-	setupTestApp(mockAPIClient)
+	repo, _ := setupTestApp(mockAPIClient)
 
 	form := url.Values{}
 	form.Add("latitude", "40.7128")
@@ -211,7 +211,7 @@ func Test_PostAllowedParking_ValidationLongitudeError(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(Repo.PostAllowedParking)
+	handler := http.HandlerFunc(repo.PostAllowedParking)
 
 	handler.ServeHTTP(rr, req)
 
@@ -221,7 +221,7 @@ func Test_PostAllowedParking_ValidationLongitudeError(t *testing.T) {
 func Test_PostAllowedParking_ValidationLongitudeEmpty(t *testing.T) {
 	// Create a mock API client
 	mockAPIClient := new(services.MockAPIClient)
-	setupTestApp(mockAPIClient)
+	repo, _ := setupTestApp(mockAPIClient)
 
 	form := url.Values{}
 	form.Add("latitude", "40.7128")
@@ -232,7 +232,7 @@ func Test_PostAllowedParking_ValidationLongitudeEmpty(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(Repo.PostAllowedParking)
+	handler := http.HandlerFunc(repo.PostAllowedParking)
 
 	handler.ServeHTTP(rr, req)
 
