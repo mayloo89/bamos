@@ -56,6 +56,25 @@ migrations/        # Database migrations
 5. **Access the app:**
    Open [http://localhost:8080](http://localhost:8080) in your browser.
 
+## Required Environment Variables
+
+The following environment variables are required for Bamos to run correctly:
+
+| Variable           | Description                                      |
+|--------------------|--------------------------------------------------|
+| `ROUTES_FILE`      | Path to the routes CSV file (default: `static/routesinfo/routes.txt`) |
+| `CABA_CLIENT_ID`   | Client ID for the CABA Transport API             |
+| `CABA_CLIENT_SECRET` | Client Secret for the CABA Transport API         |
+
+You can set these in your shell, CI/CD, or a `.env` file (see [godotenv](https://github.com/joho/godotenv) for local development).
+
+Example for local development:
+```sh
+export ROUTES_FILE=static/routesinfo/routes.txt
+export CABA_CLIENT_ID=your_client_id
+export CABA_CLIENT_SECRET=your_client_secret
+```
+
 ## API Endpoints
 - `GET /` — Home page
 - `GET /colectivos/search` — Search bus lines
