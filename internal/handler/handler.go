@@ -23,7 +23,6 @@ import (
 	"github.com/mayloo89/bamos/utils"
 )
 
-var Repo *Repository
 var clientID = "c8d4a93a976a477ba07a085281a54cfe"
 var clientSecret = "3e7EB2594E224759901303321FbD1E18"
 var apiBaseURL = "https://apitransporte.buenosaires.gob.ar"
@@ -42,11 +41,6 @@ func NewRepo(a *config.AppConfig, apiClient services.APIClient) *Repository {
 		App:       a,
 		APIClient: apiClient,
 	}
-}
-
-// NewHandler sets the global Repo variable for use by HTTP handlers.
-func NewHandler(r *Repository) {
-	Repo = r
 }
 
 // Home renders the home page.
