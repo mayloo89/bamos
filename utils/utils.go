@@ -2,30 +2,43 @@ package utils
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
 
+// Route represents a single route entry from the routes CSV file.
 type Route struct {
-	ID        string `csv:"route_id"`
-	AgencyID  string `csv:"agency_id"`
-	ShortName string `csv:"route_short_name"`
-	LongName  string `csv:"route_long_name"`
-	Desc      string `csv:"route_desc"`
-	Type      string `csv:"route_type"`
+	ID        string `csv:"route_id"`      // Unique route identifier
+	AgencyID  string `csv:"agency_id"`     // Agency identifier
+	ShortName string `csv:"route_short_name"` // Short name of the route
+	LongName  string `csv:"route_long_name"`  // Long name of the route
+	Desc      string `csv:"route_desc"`    // Description of the route
+	Type      string `csv:"route_type"`    // Type of the route
 }
 
-func GetRoutes() []Route {
+// GetRoutes loads routes from the CSV file specified by the ROUTES_FILE environment variable.
+// If the variable is not set, it defaults to static/routesinfo/routes.txt.
+// Returns a slice of Route and an error if the file is missing or malformed.
+func GetRoutes() ([]Route, error) {
 	var routes []Route
-	csvFile, err := os.OpenFile("/Users/ssourigues/github.com/mayloo89/bamos/static/routesinfo/routes.txt", os.O_RDONLY, os.ModePerm)
-	if err != nil {
-		panic(err)
+	path := os.Getenv("ROUTES_FILE")
+	if path == "" {
+		path = filepath.Join("static", "routesinfo", "routes.txt")
 	}
-
-	defer csvFile.Close()
+	csvFile, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("could not open routes file at %s: %w", path, err)
+	}
+	defer func() {
+		if cerr := csvFile.Close(); cerr != nil {
+			log.Println("error closing csv file:", cerr)
+		}
+	}()
 
 	reaader := csv.NewReader(csvFile)
 	for {
@@ -34,9 +47,11 @@ func GetRoutes() []Route {
 			if err == io.EOF {
 				break
 			}
-			log.Fatal(err)
+			return nil, fmt.Errorf("error reading routes file at %s: %w", path, err)
 		}
-
+		if len(line) < 6 {
+			return nil, fmt.Errorf("malformed routes file at %s: expected at least 6 columns, got %d", path, len(line))
+		}
 		routes = append(routes, Route{
 			ID:        line[0],
 			AgencyID:  line[1],
@@ -47,25 +62,26 @@ func GetRoutes() []Route {
 		})
 	}
 
-	return routes
+	return routes, nil
 }
 
+// SearchLine searches for routes matching the given line string in the provided routes slice.
+// It first tries to match by numeric value, then by substring.
 func SearchLine(line string, routes []Route) []Route {
-	result := []Route{}
+	var result []Route
 	re := regexp.MustCompile("[0-9]+")
 
-	// Try to find the line trimming the letters in the ShortName
+	// First, try to match by numeric value in ShortName
 	for _, route := range routes {
-		lineNumber := re.FindString(route.ShortName)
-		if ok := lineNumber == line; ok {
+		if re.FindString(route.ShortName) == line {
 			result = append(result, route)
 		}
 	}
 
-	// In case of no results, try to find the line contained in the ShortName
+	// If no results, try substring match in ShortName
 	if len(result) == 0 {
 		for _, route := range routes {
-			if ok := strings.Contains(route.ShortName, line); ok {
+			if strings.Contains(route.ShortName, line) {
 				result = append(result, route)
 			}
 		}

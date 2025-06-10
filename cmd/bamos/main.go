@@ -8,11 +8,13 @@ import (
 	"time"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/joho/godotenv"
 
 	"github.com/mayloo89/bamos/internal/config"
 	"github.com/mayloo89/bamos/internal/handler"
 	"github.com/mayloo89/bamos/internal/helpers"
 	"github.com/mayloo89/bamos/internal/render"
+	"github.com/mayloo89/bamos/internal/services"
 	"github.com/mayloo89/bamos/utils"
 )
 
@@ -21,6 +23,11 @@ const portNumber = ":8080"
 var app config.AppConfig
 var session *scs.SessionManager
 
+func init() {
+	// Load .env file if present (for local development)
+	_ = godotenv.Load()
+}
+
 func main() {
 	err := run()
 	if err != nil {
@@ -28,9 +35,10 @@ func main() {
 	}
 
 	fmt.Printf("starting application at port %s \n", portNumber)
+	repo := handler.NewRepo(&app, services.NewAPIClient())
 	srv := &http.Server{
 		Addr:    portNumber,
-		Handler: routes(&app),
+		Handler: routes(&app, repo),
 	}
 
 	err = srv.ListenAndServe()
@@ -61,14 +69,16 @@ func run() error {
 
 	app.TemplateCache = tc
 	app.UseCache = false
-	app.DataCache.Routes = utils.GetRoutes()
+	routes, err := utils.GetRoutes()
+	if err != nil {
+		return fmt.Errorf("failed to load routes: %w", err)
+	}
+	app.DataCache.Routes = routes
 	if len(app.DataCache.Routes) <= 0 {
 		fmt.Printf("no routes were loaded in the cache\n")
 	}
 	fmt.Printf("routes cache loaded with %d routes.\n", len(app.DataCache.Routes))
 
-	repo := handler.NewRepo(&app)
-	handler.NewHandler(repo)
 	render.NewTemplates(&app)
 	helpers.NewHelpers(&app)
 

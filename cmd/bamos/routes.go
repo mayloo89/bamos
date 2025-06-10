@@ -10,7 +10,7 @@ import (
 	"github.com/mayloo89/bamos/internal/handler"
 )
 
-func routes(app *config.AppConfig) http.Handler {
+func routes(app *config.AppConfig, repo *handler.Repository) http.Handler {
 	mux := chi.NewRouter()
 
 	mux.Use(middleware.Recoverer)
@@ -20,12 +20,16 @@ func routes(app *config.AppConfig) http.Handler {
 	fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
 
-	mux.Get("/", handler.Repo.Home)
-	mux.Get("/colectivos/vehiclePositionsSimple", handler.Repo.VehiclePositionsSimple)
-	// mux.Get("/colectivos/feed-gtfs-frequency", handler.Repo.FeedGtfsFrequency)
+	mux.Get("/", repo.Home)
+	mux.Get("/colectivos/vehiclePositionsSimple", repo.VehiclePositionsSimple)
+	// mux.Get("/colectivos/feed-gtfs-frequency", repo.FeedGtfsFrequency)
 
-	mux.Get("/colectivos/search", handler.Repo.SearchLine)
-	mux.Post("/colectivos/search", handler.Repo.PostSearchLine)
+	mux.Get("/colectivos/search", repo.SearchLine)
+	mux.Post("/colectivos/search", repo.PostSearchLine)
+
+	// Allowed Parking
+	mux.Get("/transit/allowed-parking", repo.AllowedParking)
+	mux.Post("/transit/allowed-parking", repo.PostAllowedParking)
 
 	return mux
 }
