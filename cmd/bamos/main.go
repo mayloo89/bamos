@@ -4,12 +4,17 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/alexedwards/scs/v2"
+	"github.com/joho/godotenv"
+
 	"github.com/mayloo89/bamos/internal/config"
 	"github.com/mayloo89/bamos/internal/handler"
+	"github.com/mayloo89/bamos/internal/helpers"
 	"github.com/mayloo89/bamos/internal/render"
+	"github.com/mayloo89/bamos/internal/services"
 	"github.com/mayloo89/bamos/utils"
 )
 
@@ -18,10 +23,37 @@ const portNumber = ":8080"
 var app config.AppConfig
 var session *scs.SessionManager
 
-func main() {
+func init() {
+	// Load .env file if present (for local development)
+	_ = godotenv.Load()
+}
 
-	//TODO: change this when in production
+func main() {
+	err := run()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("starting application at port %s \n", portNumber)
+	repo := handler.NewRepo(&app, services.NewAPIClient())
+	srv := &http.Server{
+		Addr:    portNumber,
+		Handler: routes(&app, repo),
+	}
+
+	err = srv.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func run() error {
+	// change this when in production
 	app.InProduction = false
+
+	// set up the loggers
+	app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	session = scs.New()
 	session.Lifetime = 24 * time.Hour
@@ -37,26 +69,18 @@ func main() {
 
 	app.TemplateCache = tc
 	app.UseCache = false
-	app.DataCache.Routes = utils.GetRoutes()
+	routes, err := utils.GetRoutes()
+	if err != nil {
+		return fmt.Errorf("failed to load routes: %w", err)
+	}
+	app.DataCache.Routes = routes
 	if len(app.DataCache.Routes) <= 0 {
 		fmt.Printf("no routes were loaded in the cache\n")
 	}
 	fmt.Printf("routes cache loaded with %d routes.\n", len(app.DataCache.Routes))
 
-	repo := handler.NewRepo(&app)
-	handler.NewHandler(repo)
-
 	render.NewTemplates(&app)
+	helpers.NewHelpers(&app)
 
-	fmt.Printf("starting application at port %s \n", portNumber)
-
-	srv := &http.Server{
-		Addr:    portNumber,
-		Handler: routes(&app),
-	}
-
-	err = srv.ListenAndServe()
-	if err != nil {
-		log.Fatal(err)
-	}
+	return nil
 }

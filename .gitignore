@@ -1,2 +1,7 @@
 .vscode
 .DS_Store
+bamos
+database.yml
+
+#Environment secret's file
+.env
