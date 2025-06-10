@@ -1,0 +1,128 @@
+
+{{template "base" .}}
+
+
+{{define "css"}}
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-top: 20px;
+        }
+    </style>
+{{end}}
+
+{{define "content"}}
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h1>Search Address in Buenos Aires</h1>
+                
+                {{$address := index .Data "address"}}
+                <form action="/transit/allowed-parking" method="POST" class="mb-3">
+                    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                    <div class="mb-3">
+                        <input id="address-input" type="text" name="address" placeholder="Enter an address" style="width: 300px; padding: 8px;">
+                        
+                        <button id="submit" type="submit" class="btn btn-primary">Search</button>
+                        
+                        <input id="latitude" type="hidden" name="latitude" value="{{if .Data.latitude}}{{.Data.latitude}}{{else}}-34.603722{{end}}">
+                        <input id="longitude" type="hidden" name="longitude" value="{{if .Data.longitude}}{{.Data.longitude}}{{else}}-58.381592{{end}}">
+                    </div>
+
+                </form>
+
+                <div id="result" style="margin-top: 20px;"></div>
+                <div id="map"></div>
+
+                <div id="parking-rules" style="margin-top: 20px;">
+                    {{if .Data.rules}}
+                        <h2>Rules within 100 meters</h2>
+                        <ul>
+                            {{range $key, $values := .Data.rules}}
+                                <li>
+                                    <strong>{{$key}}</strong> 
+                                    <ul>
+                                        {{range $values}}
+                                            <li>{{.}}</li>
+                                        {{end}}
+                                    </ul>
+                                </li>
+                            {{end}}
+                        </ul>
+                    {{end}}
+                    {{if .Data.error}}
+                        <h2>Error:</h2>
+                        <p>{{.Data.error}}</p>
+                    {{end}}
+                </div>
+                    
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+    <script src="https://maps.googleapis.com/maps/api/js?key=***REMOVED***&libraries=places"></script>
+    <script>
+        let map, marker;
+
+        function initAutocomplete() {
+            const input = document.getElementById('address-input');
+            const options = {
+                componentRestrictions: { country: 'ar' }, // Restrict to Argentina
+                fields: ['formatted_address', 'geometry'],
+                types: ['address'], // Only addresses
+            };
+
+            const autocomplete = new google.maps.places.Autocomplete(input, options);
+            const pos = { 
+                lat: parseFloat(document.getElementById('latitude').value), 
+                lng: parseFloat(document.getElementById('longitude').value) 
+            };
+
+            console.log(pos);
+
+            // Initialize the map centered on Buenos Aires
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: pos,
+                zoom: 16,
+            });
+
+            marker = new google.maps.Marker({
+                map: map,
+                position: pos,
+            });
+
+            // Listen for address selection
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    alert("No details available for the selected address.");
+                    return;
+                }
+
+                // Update the map and marker
+                map.setCenter(place.geometry.location);
+                map.setZoom(16);
+                marker.setPosition(place.geometry.location);
+
+                // Display the selected address and coordinates
+                document.getElementById('result').innerHTML = `
+                    <p><strong>Address:</strong> ${place.formatted_address}</p>
+                `;
+
+                // Populate hidden form fields with latitude and longitude
+                document.getElementById('latitude').value = place.geometry.location.lat();
+                document.getElementById('longitude').value = place.geometry.location.lng();
+            });
+        }
+    </script>
+
+    <script>
+        // Initialize the map and autocomplete when the page loads
+        window.onload = function() {
+            initAutocomplete();
+        };
+    </script>
+{{end}}
