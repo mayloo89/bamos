@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -174,7 +175,13 @@ func (m *Repository) PostSearchLine(w http.ResponseWriter, r *http.Request) {
 
 // AllowedParking renders the allowed parking page.
 func (m *Repository) AllowedParking(w http.ResponseWriter, r *http.Request) {
-	err := render.RenderTemplate(w, r, "allowedparking.page.tmpl", &model.TemplateData{})
+	googleMapsAPIKey := os.Getenv("GOOGLE_MAPS_API_KEY")
+	data := map[string]interface{}{
+		"google_maps_api_key": googleMapsAPIKey,
+	}
+	err := render.RenderTemplate(w, r, "allowedparking.page.tmpl", &model.TemplateData{
+		Data: data,
+	})
 	if err != nil {
 		helpers.ServerError(w, err)
 	}
@@ -240,6 +247,9 @@ func (m *Repository) PostAllowedParking(w http.ResponseWriter, r *http.Request) 
 	if errors.Is(err, services.ErrNoParkingRules) {
 		data["error"] = "No parking rules found for the specified location."
 	}
+
+	googleMapsAPIKey := os.Getenv("GOOGLE_MAPS_API_KEY")
+	data["google_maps_api_key"] = googleMapsAPIKey
 
 	// Render the allowed parking template with the data
 	err = render.RenderTemplate(w, r, "allowedparking.page.tmpl", &model.TemplateData{
