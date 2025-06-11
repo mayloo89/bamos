@@ -7,6 +7,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func createTempFileWithContent(t *testing.T, content string) string {
+	f, err := os.CreateTemp("", "routes_test_*.csv")
+	if err != nil {
+		t.Fatalf("failed to create temp file: %v", err)
+	}
+	if content != "" {
+		_, werr := f.WriteString(content)
+		if werr != nil {
+			t.Fatalf("failed to write to temp file: %v", werr)
+		}
+	}
+	if err := f.Close(); err != nil {
+		t.Fatalf("failed to close temp file: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := os.Remove(f.Name()); err != nil {
+			t.Errorf("failed to remove temp file: %v", err)
+		}
+	})
+	return f.Name()
+}
+
 func TestGetRoutes(t *testing.T) {
 	t.Run("valid file", func(t *testing.T) {
 		err := os.Setenv("ROUTES_FILE", "../static/routesinfo/routes.txt")
@@ -32,23 +54,8 @@ func TestGetRoutes(t *testing.T) {
 	})
 
 	t.Run("malformed file", func(t *testing.T) {
-		f, err := os.CreateTemp("", "bad_routes_*.csv")
-		if err != nil {
-			t.Fatalf("failed to create temp file: %v", err)
-		}
-		defer func() {
-			if err := os.Remove(f.Name()); err != nil {
-				t.Errorf("failed to remove temp file: %v", err)
-			}
-		}()
-		_, werr := f.WriteString("bad,data,onlythree\n")
-		if werr != nil {
-			t.Fatalf("failed to write to temp file: %v", werr)
-		}
-		if err := f.Close(); err != nil {
-			t.Fatalf("failed to close temp file: %v", err)
-		}
-		err = os.Setenv("ROUTES_FILE", f.Name())
+		file := createTempFileWithContent(t, "bad,data,onlythree\n")
+		err := os.Setenv("ROUTES_FILE", file)
 		require.Nil(t, err)
 
 		_, err = GetRoutes()
@@ -58,23 +65,8 @@ func TestGetRoutes(t *testing.T) {
 	})
 
 	t.Run("extra columns", func(t *testing.T) {
-		f, err := os.CreateTemp("", "extra_routes_*.csv")
-		if err != nil {
-			t.Fatalf("failed to create temp file: %v", err)
-		}
-		defer func() {
-			if err := os.Remove(f.Name()); err != nil {
-				t.Errorf("failed to remove temp file: %v", err)
-			}
-		}()
-		_, werr := f.WriteString("id,agency,short,long,desc,type,extra1,extra2\n1,2,3,4,5,6,7,8\n")
-		if werr != nil {
-			t.Fatalf("failed to write to temp file: %v", werr)
-		}
-		if err := f.Close(); err != nil {
-			t.Fatalf("failed to close temp file: %v", err)
-		}
-		err = os.Setenv("ROUTES_FILE", f.Name())
+		file := createTempFileWithContent(t, "id,agency,short,long,desc,type,extra1,extra2\n1,2,3,4,5,6,7,8\n")
+		err := os.Setenv("ROUTES_FILE", file)
 		require.Nil(t, err)
 
 		routes, err := GetRoutes()
@@ -87,19 +79,8 @@ func TestGetRoutes(t *testing.T) {
 	})
 
 	t.Run("empty file", func(t *testing.T) {
-		f, err := os.CreateTemp("", "empty_routes_*.csv")
-		if err != nil {
-			t.Fatalf("failed to create temp file: %v", err)
-		}
-		defer func() {
-			if err := os.Remove(f.Name()); err != nil {
-				t.Errorf("failed to remove temp file: %v", err)
-			}
-		}()
-		if err := f.Close(); err != nil {
-			t.Fatalf("failed to close temp file: %v", err)
-		}
-		err = os.Setenv("ROUTES_FILE", f.Name())
+		file := createTempFileWithContent(t, "")
+		err := os.Setenv("ROUTES_FILE", file)
 		require.Nil(t, err)
 		routes, err := GetRoutes()
 		if err != nil {

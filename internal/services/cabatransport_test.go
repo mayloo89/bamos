@@ -50,31 +50,31 @@ func TestParkingRules_OK(t *testing.T) {
                         {
                             "nombreId": "calle",
                             "nombre": "Calle",
-                            "posicion": "1",
+                            "position": "1",
                             "valor": "Corrientes"
                         },
                         {
                             "nombreId": "altura",
                             "nombre": "Altura",
-                            "posicion": "2",
+                            "position": "2",
                             "valor": "1000"
                         },
                         {
                             "nombreId": "permiso",
                             "nombre": "Permiso",
-                            "posicion": "3",
+                            "position": "3",
                             "valor": "Permitido"
                         },
                         {
                             "nombreId": "horario",
                             "nombre": "Horario",
-                            "posicion": "4",
+                            "position": "4",
                             "valor": "08:00-20:00"
                         },
                         {
                             "nombreId": "lado",
                             "nombre": "Lado",
-                            "posicion": "5",
+                            "position": "5",
                             "valor": "Izquierdo"
                         }
                     ]
@@ -255,31 +255,31 @@ func TestParkingRules_RetryLogic(t *testing.T) {
                         {
                             "nombreId": "calle",
                             "nombre": "Calle",
-                            "posicion": "1",
+                            "position": "1",
                             "valor": "Corrientes"
                         },
                         {
                             "nombreId": "altura",
                             "nombre": "Altura",
-                            "posicion": "2",
+                            "position": "2",
                             "valor": "1000"
                         },
                         {
                             "nombreId": "permiso",
                             "nombre": "Permiso",
-                            "posicion": "3",
+                            "position": "3",
                             "valor": "Permitido"
                         },
                         {
                             "nombreId": "horario",
                             "nombre": "Horario",
-                            "posicion": "4",
+                            "position": "4",
                             "valor": "08:00-20:00"
                         },
                         {
                             "nombreId": "lado",
                             "nombre": "Lado",
-                            "posicion": "5",
+                            "position": "5",
                             "valor": "Izquierdo"
                         }
                     ]
@@ -472,43 +472,43 @@ func TestParkingRules_OKWithParidad(t *testing.T) {
                         {
                             "nombreId": "calle",
                             "nombre": "Calle",
-                            "posicion": "1",
+                            "position": "1",
                             "valor": "Corrientes"
                         },
                         {
                             "nombreId": "altura",
                             "nombre": "Altura",
-                            "posicion": "2",
+                            "position": "2",
                             "valor": "1000"
                         },
                         {
                             "nombreId": "permiso",
                             "nombre": "Permiso",
-                            "posicion": "3",
+                            "position": "3",
                             "valor": "Permitido"
                         },
                         {
                             "nombreId": "horario",
                             "nombre": "Horario",
-                            "posicion": "4",
+                            "position": "4",
                             "valor": "08:00-20:00"
                         },
                         {
                             "nombreId": "lado",
                             "nombre": "Lado",
-                            "posicion": "5",
+                            "position": "5",
                             "valor": "Izquierdo"
                         },
                         {
                             "nombreId": "paridad",
                             "nombre": "Paridad",
-                            "posicion": "6",
+                            "position": "6",
                             "valor": "Impar"
                         },
                         {
                             "nombreId": "unexpected",
                             "nombre": "unexpected",
-                            "posicion": "7",
+                            "position": "7",
                             "valor": "something"
                         }
                     ]
