@@ -2,7 +2,6 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/mayloo89/bamos)](https://goreportcard.com/report/github.com/mayloo89/bamos)
 [![Build Status](https://github.com/mayloo89/bamos/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/mayloo89/bamos/actions)
-[![codecov](https://codecov.io/gh/mayloo89/bamos/branch/main/graph/badge.svg)](https://codecov.io/gh/mayloo89/bamos)
 
 Bamos is a web application built in Go that provides information and tools for public transport in the Metropolitan Area of Buenos Aires, Argentina, using the [CABA Transport API](https://api-transporte.buenosaires.gob.ar/console).
 
