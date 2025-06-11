@@ -61,10 +61,10 @@ type (
 
 	// RuleDetail represents the details of a parking rule
 	RuleDetail struct {
-		NameID    string `json:"nombreId"`
-		Name      string `json:"nombre"`
-		Possition string `json:"posicion"`
-		Value     string `json:"valor"`
+		NameID   string `json:"nombreId"`
+		Name     string `json:"nombre"`
+		Position string `json:"position"`
+		Value    string `json:"valor"`
 	}
 
 	// SimplifiedRules represents a simplified version of parking rules
