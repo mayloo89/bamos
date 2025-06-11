@@ -13,12 +13,12 @@ import (
 
 // Route represents a single route entry from the routes CSV file.
 type Route struct {
-	ID        string `csv:"route_id"`      // Unique route identifier
-	AgencyID  string `csv:"agency_id"`     // Agency identifier
+	ID        string `csv:"route_id"`         // Unique route identifier
+	AgencyID  string `csv:"agency_id"`        // Agency identifier
 	ShortName string `csv:"route_short_name"` // Short name of the route
 	LongName  string `csv:"route_long_name"`  // Long name of the route
-	Desc      string `csv:"route_desc"`    // Description of the route
-	Type      string `csv:"route_type"`    // Type of the route
+	Desc      string `csv:"route_desc"`       // Description of the route
+	Type      string `csv:"route_type"`       // Type of the route
 }
 
 // GetRoutes loads routes from the CSV file specified by the ROUTES_FILE environment variable.

@@ -26,31 +26,31 @@ const (
                         {
                             "nombreId": "calle",
                             "nombre": "Calle",
-                            "posicion": "1",
+                            "position": "1",
                             "valor": "Corrientes"
                         },
                         {
                             "nombreId": "altura",
                             "nombre": "Altura",
-                            "posicion": "2",
+                            "position": "2",
                             "valor": "1000"
                         },
                         {
                             "nombreId": "permiso",
                             "nombre": "Permiso",
-                            "posicion": "3",
+                            "position": "3",
                             "valor": "Permitido"
                         },
                         {
                             "nombreId": "horario",
                             "nombre": "Horario",
-                            "posicion": "4",
+                            "position": "4",
                             "valor": "08:00-20:00"
                         },
                         {
                             "nombreId": "lado",
                             "nombre": "Lado",
-                            "posicion": "5",
+                            "position": "5",
                             "valor": "Izquierdo"
                         }
                     ]
